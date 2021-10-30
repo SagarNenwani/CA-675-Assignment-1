@@ -1,0 +1,29 @@
+
+----fetch top 10 post id based on max score
+
+DistinctIdPosts = GROUP mergedcsv BY Id;
+IdByMaxScore = FOREACH DistinctIdPosts GENERATE group AS postId, MAX(mergedcsv.Score) AS maxscore;
+MaxScoreDescOrder = ORDER IdByMaxScore BY maxscore DESC;
+Top10Posts = LIMIT MaxScoreDescOrder 10;
+Top10PostId = FOREACH Top10Posts GENERATE postId;
+dump Top10PostId;
+
+
+----fetch top 10 distinct user based on score
+
+DistinctUserPosts = GROUP mergedcsv BY OwnerUserId;
+UserBySumOfScore = FOREACH DistinctUserPosts GENERATE group AS userid, SUM(mergedcsv.Score) AS sumofscore;
+SumOfScoreDescOrder = ORDER UserBySumOfScore BY sumofscore DESC;
+Top10Rows = LIMIT SumOfScoreDescOrder 10;
+Top10UserId = FOREACH Top10Rows GENERATE userid;
+dump Top10UserId;
+
+----cleaning the body column
+
+clean_data = FOREACH mergedcsv GENERATE Id, OwnerUserId, Score, ViewCount,REPLACE(REPLACE(REPLACE(REPLACE(REPLACE((REPLACE(Body,'[\r\n]+','')),'<[^>]*>' , ' '),'[^a-zA-Z\\s\']+',' '),'(?=\\S*[\'])([a-zA-Z\'-]+)',''),'(?<![\\w\\-])\\w(?![\\w\\-])',''),'[ ]{2,}',' ') AS Body, Title, Tags;
+
+STORE clean_data INTO '/clean_data' USING org.apache.pig.piggybank.storage.CSVExcelStorage(',','NO_MULTILINE','NOCHANGE','SKIP_OUTPUT_HEADER');
+
+----exit pig
+
+hadoop fs -copyToLocal /clean_data ./clean_data

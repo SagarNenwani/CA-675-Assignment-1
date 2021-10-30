@@ -1,0 +1,39 @@
+
+----Loading data in pig
+
+csv1 = LOAD '/QueryResults1.csv' USING org.apache.pig.piggybank.storage.CSVExcelStorage(',','YES_MULTILINE','NOCHANGE','SKIP_INPUT_HEADER') AS (Id:int, OwnerUserId:int, Score:int, ViewCount:int, Body:chararray, Title:chararray, Tags:chararray);
+
+csvdata1 = GROUP csv1 ALL;
+csvcount1 = FOREACH csvdata1 GENERATE COUNT(csv1.Id);
+dump csvcount1;
+
+csv2 = LOAD '/QueryResults2.csv' USING org.apache.pig.piggybank.storage.CSVExcelStorage(',','YES_MULTILINE','NOCHANGE','READ_INPUT_HEADER') AS (Id:int, OwnerUserId:int, Score:int, ViewCount:int, Body:chararray, Title:chararray, Tags:chararray);
+
+csvdata2 = GROUP csv2 ALL;
+csvcount2 = FOREACH csvdata2 GENERATE COUNT(csv2.Id);
+dump csvcount2;
+
+csv3 = LOAD '/QueryResults3.csv' USING org.apache.pig.piggybank.storage.CSVExcelStorage(',','YES_MULTILINE','NOCHANGE','READ_INPUT_HEADER') AS (Id:int, OwnerUserId:int, Score:int, ViewCount:int, Body:chararray, Title:chararray, Tags:chararray);
+
+csvdata3 = GROUP csv3 ALL;
+csvcount3 = FOREACH csvdata3 GENERATE COUNT(csv3.Id);
+dump csvcount3;
+
+csv4 = LOAD '/QueryResults4.csv' USING org.apache.pig.piggybank.storage.CSVExcelStorage(',','YES_MULTILINE','NOCHANGE','READ_INPUT_HEADER') AS (Id:int, OwnerUserId:int, Score:int, ViewCount:int, Body:chararray, Title:chararray, Tags:chararray);
+
+csvdata4 = GROUP csv4 ALL;
+csvcount4 = FOREACH csvdata4 GENERATE COUNT(csv4.Id);
+dump csvcount4;
+
+
+----Once all return 50000 rows merge all 
+
+mergedcsv = UNION csv1,csv2,csv3,csv4;
+
+mergedcsvdata = GROUP mergedcsv ALL;
+mergedcsvcount = FOREACH mergedcsvdata GENERATE COUNT(mergedcsv.Id);
+dump mergedcsvcount;
+
+----Checking for all 200000 data being loaded
+
+

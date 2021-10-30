@@ -1,0 +1,41 @@
+SELECT MAX(ViewCount) AS MaxViewCount FROM Posts;
+result 10062790
+
+select top 50000 Id, OwnerUserId,Score, ViewCount, Body, Title, Tags
+from posts 
+where posts.ViewCount <= 10063000 
+and OwnerUserId is not null and OwnerUserId >=0
+ORDER BY posts.ViewCount desc
+
+result 	Last id  326818
+		Last view count 124974
+		
+select top 50000 Id, OwnerUserId,Score, ViewCount, Body, Title, Tags
+from posts 
+where posts.ViewCount <= 124974 and posts.id != 326818
+and OwnerUserId is not null and OwnerUserId >=0
+ORDER BY posts.ViewCount desc
+
+result	Last id  30226113 and 1135573 and 15493769
+		Last view count 73140
+
+select top 50000 Id, OwnerUserId,Score, ViewCount, Body, Title, Tags
+from posts 
+where posts.ViewCount <= 73140 and posts.id != 30226113
+and posts.id !=1135573
+and posts.id !=15493769
+and OwnerUserId is not null and OwnerUserId >=0
+ORDER BY posts.ViewCount desc
+
+result	Last id  4069853 and 17727436
+		Last view count 52110
+
+select top 50000 Id, OwnerUserId,Score, ViewCount, Body, Title, Tags
+from posts 
+where posts.ViewCount <= 52110 and posts.id != 4069853
+and posts.id !=17727436
+and OwnerUserId is not null and OwnerUserId >=0
+ORDER BY posts.ViewCount desc
+
+result	Last id  11041961
+		Last view count 40454

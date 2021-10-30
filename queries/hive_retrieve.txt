@@ -1,0 +1,26 @@
+
+----creating new table based on location of cleaned data expored from pig
+
+create table clean_data_posts (Id int, OwnerUserId int, Score int, ViewCount int, Body string, Title string, Tags string) row format delimited fields terminated by ',' location '/clean_data';
+
+select count(id) from clean_data_posts;
+
+----fetch top 10 post id based on max score
+
+SELECT Id, Title, OwnerUserId, Score 
+FROM clean_data_posts
+ORDER BY Score DESC LIMIT 10;
+
+----fetch top 10 distinct user based on score
+
+SELECT OwnerUserId, SUM(Score) AS OverAllScore
+FROM clean_data_posts
+GROUP BY OwnerUserId
+ORDER BY OverAllScore DESC LIMIT 10;
+
+----count of distinct users, who used the word “cloud” in one of their posts
+
+SELECT COUNT(DISTINCT OwnerUserId)
+FROM clean_data_posts
+WHERE (LOWER(body) LIKE LOWER('%cloud%') OR LOWER(title) LIKE LOWER('%cloud%') OR LOWER(tags) LIKE LOWER('%cloud%'));
+

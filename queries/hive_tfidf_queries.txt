@@ -1,0 +1,44 @@
+----tf_idf prerequisites
+
+add jar /home/sagar_nenwani2/hivemall-core-0.4.2-rc.2-with-dependencies.jar;
+
+source /home/sagar_nenwani2/define-all.hive;
+
+create temporary macro max2(x INT, y INT) if(x>y,x,y);
+
+create temporary macro tfidf(tf FLOAT, df_t INT, n_docs INT) tf * (log(10, CAST(n_docs as FLOAT)/max2(1,df_t)) + 1.0);
+
+CREATE TABLE TopUsers
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',' AS
+SELECT OwnerUserId, SUM(Score) AS OverAllScore
+FROM clean_data_posts
+GROUP BY OwnerUserId
+ORDER BY OverAllScore DESC LIMIT 10;
+
+
+CREATE TABLE TopUserPosts AS
+SELECT OwnerUserId, Body, Title, Tags
+FROM clean_data_posts
+WHERE OwnerUserId in (SELECT OwnerUserId FROM TopUsers)
+GROUP BY OwnerUserId, Body, Title, Tags;
+
+----tf_idf from body
+
+create or replace view TokenizedBodyView as select OwnerUserId, eachword from TopUserPosts LATERAL VIEW explode(tokenize(Body, True)) t as eachword where not is_stopword(eachword);
+
+create or replace view tempBodyView as select OwnerUserId, eachword, freq from (select OwnerUserId, tf(eachword) as word2freq from TokenizedBodyView group by OwnerUserId) t LATERAL VIEW explode(word2freq) t2 as eachword, freq;
+
+create or replace view tfidf_body as select * from (select OwnerUserId, eachword, freq,rank()  over (partition by OwnerUserId order by freq desc) as rn from tempBodyView as t) as t where t.rn<=10 ;
+
+select * from tfidf_body;
+
+----tf_idf from Title
+
+create or replace view TokenizedTitleView as select OwnerUserId, eachword from TopUserPosts LATERAL VIEW explode(tokenize(Title, True)) t as eachword where not is_stopword(eachword);
+
+create or replace view tempTitleView as select OwnerUserId, eachword, freq from (select OwnerUserId, tf(eachword) as word2freq from TokenizedTitleView group by OwnerUserId) t LATERAL VIEW explode(word2freq) t2 as eachword, freq;
+
+create or replace view tfidf_Title as select * from (select OwnerUserId, eachword, freq,rank()  over (partition by OwnerUserId order by freq desc) as rn from tempTitleView as t) as t where t.rn<=10 ;
+
+select * from tfidf_Title;
